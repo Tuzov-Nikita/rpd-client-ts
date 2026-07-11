@@ -12,16 +12,14 @@ import {
 import { Loader } from "@shared/ui";
 import { FC, useEffect, useMemo, useState } from "react";
 
-// Опция выпадающего списка: связана с исходной дисциплиной.
 type PreviousDisciplineOption = TemplateData & {
-  label: string; // "Дисциплина (семестр N)" — для отображения/поиска
+  label: string; // "Дисциплина (семестр N)"
 };
 
 const PreviousDisciplinesSelect: FC = () => {
   const jsonData = useStore((state) => state.jsonData);
   const updateJsonData = useStore((state) => state.updateJsonData);
   const templateId = useStore((state) => state.jsonData.id);
-  // Текущее содержимое place_more_text — чтобы дописывать в конец, а не заменять.
   const currentPlaceMoreText = useStore(
     (state) => state.jsonData.place_more_text
   ) as string | undefined;
@@ -35,7 +33,6 @@ const PreviousDisciplinesSelect: FC = () => {
   const [selected, setSelected] = useState<PreviousDisciplineOption[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Загружаем все дисциплины комплекта один раз при монтировании.
   useEffect(() => {
     let cancelled = false;
 
@@ -59,8 +56,6 @@ const PreviousDisciplinesSelect: FC = () => {
     };
   }, [complectId]);
 
-  // Предшествующие дисциплины: строго semester < текущего.
-  // Исключаем текущую дисциплину (по названию) и дисциплины без/с null semester.
   const previousOptions = useMemo<PreviousDisciplineOption[]>(() => {
     if (!Number.isFinite(currentSemester)) return [];
 
@@ -78,10 +73,7 @@ const PreviousDisciplinesSelect: FC = () => {
       .sort((a, b) => a.semester - b.semester || a.discipline.localeCompare(b.discipline));
   }, [allDisciplines, currentSemester, currentDiscipline]);
 
-  // Извлекает уже перечисленные дисциплины из текущего HTML place_more_text.
-  // Учитывает оформление РПД: элементы отделяются ";" (последний — "."). Поэтому
-  // возвращаем "чистые" названия, отрезая завершающий знак препинания.
-  // DOMParser читает текст <li> надёжнее, чем поиск по сырой строке.
+
   const getExistingDisciplineNames = (html: string | undefined): string[] => {
     if (!html) return [];
     try {
@@ -94,18 +86,12 @@ const PreviousDisciplinesSelect: FC = () => {
     }
   };
 
-  // Дописывает выбранные дисциплины в конец place_more_text (режим дополнения).
-  // Пунктуация по правилам оформления РПД: между элементами ";", в конце ".".
-  // Так как "последний" элемент меняется при каждом добавлении, весь список
-  // пересобирается целиком с правильной пунктуацией. Дубликаты не добавляем.
   const handleApply = async () => {
     if (!templateId || !selected.length) return;
 
     const existingHtml = currentPlaceMoreText ?? "";
     const existingNames = getExistingDisciplineNames(existingHtml);
     const existingSet = new Set(existingNames.map((n) => n.toLowerCase()));
-
-    // Только те выбранные, которых ещё нет в списке.
     const toAdd = selected
       .filter((d) => !existingSet.has(d.discipline.trim().toLowerCase()))
       .map((d) => d.discipline.trim());
@@ -116,10 +102,8 @@ const PreviousDisciplinesSelect: FC = () => {
       return;
     }
 
-    // Финальный список: существующие (в исходном порядке) + новые.
     const finalList = [...existingNames, ...toAdd];
 
-    // Проставляем пунктуацию: ";" между элементами, "." в конце последнего.
     const listItemsHtml = finalList
       .map((name, i) => {
         const suffix = i === finalList.length - 1 ? "." : ";";
@@ -129,13 +113,11 @@ const PreviousDisciplinesSelect: FC = () => {
 
     let resultHtml: string;
     if (/<ul[^>]*>[\s\S]*<\/ul>/i.test(existingHtml)) {
-      // Уже есть <ul> — заменяем его содержимое пересобранным списком.
       resultHtml = existingHtml.replace(
         /<ul[^>]*>[\s\S]*?<\/ul>/i,
         `<ul>${listItemsHtml}</ul>`
       );
     } else {
-      // Списка нет — создаём новый в конце.
       resultHtml = `${existingHtml}<ul>${listItemsHtml}</ul>`;
     }
 
@@ -216,5 +198,6 @@ const PreviousDisciplinesSelect: FC = () => {
     </Box>
   );
 };
+
 
 export default PreviousDisciplinesSelect;

@@ -125,6 +125,7 @@ const DisciplinePlace: FC<DisciplinePlaceProps> = ({ readOnly = false }) => {
       )}
       <JsonChangeValue elementName="place_more_text" />
       <PreviousDisciplinesSelect />
+      
     </Box>
   );
 };
