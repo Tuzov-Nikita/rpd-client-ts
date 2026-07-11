@@ -7,6 +7,7 @@ import { useFieldChanges } from "@pages/teacher-interface/model/useFieldChanges"
 import { FC } from "react";
 import CertificationSelector from "../changeable-elements/CertificationSelector.tsx";
 import JsonChangeValue from "../changeable-elements/JsonChangeValue.tsx";
+import PreviousDisciplinesSelect from "../changeable-elements/PreviousDisciplinesSelect.tsx";
 
 type DisciplinePlaceProps = {
   readOnly?: boolean;
@@ -123,6 +124,7 @@ const DisciplinePlace: FC<DisciplinePlaceProps> = ({ readOnly = false }) => {
         <Loader />
       )}
       <JsonChangeValue elementName="place_more_text" />
+      <PreviousDisciplinesSelect />
     </Box>
   );
 };
